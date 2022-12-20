@@ -8,19 +8,21 @@ import java.util.Date;
 
 public class Receive_ClientFinish {
     HandshakeMessage clientFinishMessage;
+    HandshakeCrypto ClientFinishCrypto;
+    HandshakeDigest clientDigest_compare;
     public boolean debug = false;
 
     public Receive_ClientFinish(Socket socket,HandshakeCertificate clientCertificate,HandshakeMessage clientHelloMessage,HandshakeMessage sessionMessage) throws Exception {
         clientFinishMessage = HandshakeMessage.recv(socket);
         if(clientFinishMessage.getType().getCode() == 4){
-            HandshakeCrypto ClientFinishCrypto = new HandshakeCrypto(clientCertificate);
+            ClientFinishCrypto = new HandshakeCrypto(clientCertificate);
             if(debug) {
                 System.out.println("ClientFinish Received");
             }
 
             byte[] timeBytes =  ClientFinishCrypto.decrypt((Base64.getDecoder().decode(clientFinishMessage.getParameter("TimeStamp"))));
             byte[] clientDigest = ClientFinishCrypto.decrypt((Base64.getDecoder().decode(clientFinishMessage.getParameter("Signature"))));
-            HandshakeDigest clientDigest_compare = new HandshakeDigest();
+            clientDigest_compare = new HandshakeDigest();
             clientDigest_compare.update(clientHelloMessage.getBytes());
             clientDigest_compare.update(sessionMessage.getBytes());
 
@@ -33,16 +35,19 @@ public class Receive_ClientFinish {
                 throw new Exception();
             }
             String s = new String(timeBytes,"UTF-8");
-            int timeStamp_last = Integer.parseInt(s.substring(s.length()-1));
-            String nowtime = Timestamp_client();
-            int nowtimelast = Integer.parseInt(nowtime.substring(nowtime.length()-1));
+            int timeStamp_recv = Integer.parseInt(s.substring(s.length()-1));
+            long nowtime_origin = System.currentTimeMillis();
+            SimpleDateFormat format =  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String time_NOW=format.format(nowtime_origin);
+
+            int nowtime_get = Integer.parseInt(time_NOW.substring(time_NOW.length()-1));
             if(debug) {
-                System.out.println("nowtime:" + nowtime);
+                System.out.println("nowtime:" + time_NOW);
                 System.out.println("timeStampReceived:" + s);
             }
-            if (timeStamp_last + 2 > nowtimelast) {
-                if (timeStamp_last - 2 < nowtimelast) {
-                    if (!s.substring(0, s.length() - 2).equals(nowtime.substring(0, nowtime.length() - 2))) {
+            if (timeStamp_recv + 2 > nowtime_get) {
+                if (timeStamp_recv - 2 < nowtime_get) {
+                    if (!s.substring(0, s.length() - 2).equals(time_NOW.substring(0, time_NOW.length() - 2))) {
                         if (debug) {
                             System.out.println("Timestamp error");
                         }
@@ -57,20 +62,6 @@ public class Receive_ClientFinish {
         else{
             throw new Exception();
         }
-    }
-
-    public static String Timestamp_client() throws IOException {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String DatePhase=null;
-        try {
-            Calendar calendar = Calendar.getInstance();
-            Date date = calendar.getTime();
-            DatePhase = sdf.format(date);
-            return DatePhase;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return DatePhase;
     }
 
     public HandshakeMessage getClientFinishMessage(){

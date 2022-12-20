@@ -5,14 +5,16 @@ import java.util.Base64;
 public class Receive_ClientHello {
     HandshakeMessage clientHelloMessage;
     public HandshakeCertificate clientCertificate;
+    HandshakeCertificate caCertificate;
     private String CertificateString;
     public boolean debug = false;
 
     public Receive_ClientHello(Socket socket, String caPath) throws Exception {
+        FileInputStream instream = new FileInputStream(caPath);
+        caCertificate = new HandshakeCertificate(instream);
+
         clientHelloMessage = HandshakeMessage.recv(socket);
         if (clientHelloMessage.getType().getCode() == 1) {
-            FileInputStream instream = new FileInputStream(caPath);
-            HandshakeCertificate caCertificate = new HandshakeCertificate(instream);
             if(debug) {
                 System.out.println("Clienthello Received");
             }

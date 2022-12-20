@@ -15,23 +15,29 @@ import java.util.Date;
 
 public class Send_ClientFinish {
     HandshakeMessage clientFinishMessage;
+    HandshakeDigest clientDigest;
+    HandshakeCrypto clientFinish;
     public boolean debug = false;
 
     public Send_ClientFinish(Socket socket, String privateKeyFile,HandshakeMessage sessionMessage,HandshakeMessage clientHelloMessage) throws NoSuchAlgorithmException, IOException, InvalidKeySpecException, IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, InvalidKeyException {
+        FileInputStream instream = new FileInputStream(privateKeyFile);
 
-        HandshakeDigest clientDigest = new HandshakeDigest();
+        clientDigest = new HandshakeDigest();
         clientDigest.update(clientHelloMessage.getBytes());
         clientDigest.update(sessionMessage.getBytes());
         clientFinishMessage = new HandshakeMessage(HandshakeMessage.MessageType.CLIENTFINISHED);
         clientDigest.digest();
 
-        FileInputStream instream = new FileInputStream(privateKeyFile);
-        String time = Timestamp_client();
+
+        long nowtime_origin = System.currentTimeMillis();
+        SimpleDateFormat format =  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String time_NOW=format.format(nowtime_origin);
 
         byte[] privateKeyBytes = instream.readAllBytes();
-        HandshakeCrypto clientFinish = new HandshakeCrypto(privateKeyBytes);
+        clientFinish = new HandshakeCrypto(privateKeyBytes);
         byte[] digestEncrypted = clientFinish.encrypt(clientDigest.digest);
-        byte[] timeBytes = time.getBytes(StandardCharsets.UTF_8);
+
+        byte[] timeBytes = time_NOW.getBytes(StandardCharsets.UTF_8);
         byte[] timeBytesEncrypted = clientFinish.encrypt(timeBytes);
 
         clientFinishMessage.putParameter("TimeStamp", Base64.getEncoder().encodeToString(timeBytesEncrypted));
@@ -40,21 +46,6 @@ public class Send_ClientFinish {
         if(debug) {
             System.out.println("Clientfinish has been sent");
         }
-    }
-
-    public static String Timestamp_client() throws IOException {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String DatePhase=null;
-        try {
-            Calendar calendar = Calendar.getInstance();
-            Date date = calendar.getTime();
-            DatePhase = sdf.format(date);
-            return DatePhase;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return DatePhase;
-
     }
 
     public HandshakeMessage getClientFinishMessage(){

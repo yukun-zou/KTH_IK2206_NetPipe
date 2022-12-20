@@ -10,6 +10,7 @@ import java.security.spec.InvalidParameterSpecException;
 import java.util.Base64;
 
 public class Client_Session {
+    HandshakeCrypto ClientSession;
     public SessionKey sessionKey;
     public byte[] sessionKeyBytes;
     public byte[] sessionIV;
@@ -21,13 +22,15 @@ public class Client_Session {
 
     public Client_Session(Socket socket,HandshakeCertificate serverCertifcate) throws InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidParameterSpecException, IOException, IllegalBlockSizeException, BadPaddingException {
         sessionKey = new SessionKey(128);
+
         sessionEncrypter = new SessionCipher(sessionKey);
         sessionIV = sessionEncrypter.getIVBytes();
+
         sessionKeyBytes = sessionKey.getKeyBytes();
         sessionDecrypter = new SessionCipher(sessionKey, sessionIV, 0);
 
         sessionMessage = new HandshakeMessage(HandshakeMessage.MessageType.SESSION);
-        HandshakeCrypto ClientSession = new HandshakeCrypto(serverCertifcate);
+        ClientSession = new HandshakeCrypto(serverCertifcate);
 
         byte[] sessionIVEncrypted = ClientSession.encrypt(sessionIV);
         sessionMessage.putParameter("SessionIV", Base64.getEncoder().encodeToString(sessionIVEncrypted));

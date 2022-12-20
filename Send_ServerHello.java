@@ -7,11 +7,12 @@ import java.util.Base64;
 
 public class Send_ServerHello {
     HandshakeMessage serverHelloMessage;
+    X509Certificate serverCertificate;
     public boolean debug = false;
 
     public Send_ServerHello(Socket socket, String certificatepath) throws CertificateException, IOException {
         FileInputStream instream = new FileInputStream(certificatepath);
-        X509Certificate serverCertificate = new HandshakeCertificate(instream).getCertificate();
+        serverCertificate = new HandshakeCertificate(instream).getCertificate();
 
         serverHelloMessage = new HandshakeMessage(HandshakeMessage.MessageType.SERVERHELLO);
         String serverCertificateString = Base64.getEncoder().encodeToString(serverCertificate.getEncoded());

@@ -15,21 +15,25 @@ import java.util.Date;
 
 public class Send_ServerFinish {
     HandshakeMessage serverFinishMessage;
+    HandshakeDigest serverDigest;
+    HandshakeCrypto serverFinish;
     public boolean debug = false;
 
     public Send_ServerFinish(Socket socket, String privateKeyFile,HandshakeMessage serverHelloMessage) throws NoSuchAlgorithmException, IOException, InvalidKeySpecException, IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, InvalidKeyException {
-
-        serverFinishMessage = new HandshakeMessage(HandshakeMessage.MessageType.SERVERFINISHED);
-        HandshakeDigest serverDigest = new HandshakeDigest();
-        serverDigest.update(serverHelloMessage.getBytes());
         FileInputStream instream = new FileInputStream(privateKeyFile);
 
+        serverDigest = new HandshakeDigest();
+        serverDigest.update(serverHelloMessage.getBytes());
         serverDigest.digest();
-
+        serverFinishMessage = new HandshakeMessage(HandshakeMessage.MessageType.SERVERFINISHED);
 
         byte[] privateKeyBytes = instream.readAllBytes();
-        HandshakeCrypto serverFinish = new HandshakeCrypto(privateKeyBytes);
-        String time_NOW = Timestamp_client();
+        serverFinish = new HandshakeCrypto(privateKeyBytes);
+
+        long nowtime_origin = System.currentTimeMillis();
+        SimpleDateFormat format =  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String time_NOW=format.format(nowtime_origin);
+
         byte[] digestEncrypted = serverFinish.encrypt(serverDigest.digest);
 
         byte[] timeBytes = time_NOW.getBytes(StandardCharsets.UTF_8);
@@ -42,20 +46,7 @@ public class Send_ServerFinish {
             System.out.println("Serverfinish has been sent");
         }
     }
-    public static String Timestamp_client() throws IOException {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String DatePHase=null;
-        try {
-            Calendar calendar = Calendar.getInstance();
-            Date date = calendar.getTime();
-            DatePHase = sdf.format(date);
-            return DatePHase;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return DatePHase;
 
-    }
     public HandshakeMessage getServerFinishMessage(){
         return serverFinishMessage;
     }

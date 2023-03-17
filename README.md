@@ -1,3 +1,11 @@
+This is Netpipe project code for KTH IK2206. Below is inrtoduction of this project.
+
+Overview
+
+In this assignment, you will implement NetPipe, a network application that provides a basic communication service: it sets up a TCP connection between two hosts, and forwards data between system input/output and the TCP connection. This application is very similar to "netcat", or "nc", a popular application for testing and evaluation. Here, you will implement it in Java, and make it secure.
+
+You can think of NetPipe as an application that sets up a secure tunnel between two computers, so that you can exchange data between them in a safe way. In this way NetPipe can serve as a general-purpose VPN (Virtual Private Network) application that allows you to connect computers across the network in a secure way. For example, in the terminal, system input and output are by default associated to the keyboard and screen, respectively. So if you run NetPipe from the command line in a terminal, you can use it to send data between two terminal windows on different hosts. If you redirect system input and output to files, NetPipe can be used as a simple file transfer program. See the assignment introduction slides for examples of NetPipe usage.
+
 # Files for Project Assignment "NetPipe"
 
 - `README.md` This file. It is in in Markdown format. You can view it as a text file, or use a Markdown preview tool (there are plenty). 

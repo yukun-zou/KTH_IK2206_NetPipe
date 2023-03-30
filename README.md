@@ -1,4 +1,4 @@
-This is Netpipe project code for KTH IK2206. Below is inrtoduction of this project.
+This is Netpipe project code for KTH IK2206. Below is inrtoduction of this project. This project tells you how to build NetPipe application in Java. If you like this project, any stars will help, thanks!
 
 Overview
 
